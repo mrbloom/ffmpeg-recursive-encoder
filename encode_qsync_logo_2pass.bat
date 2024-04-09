@@ -7,10 +7,10 @@ set "sourceFolder=Z:\fast_channels\OTERRA\ENCODE"
 :: Codec configurations and settings
 set "vCodec=h264_qsv"
 set "aCodec=aac"
-set "minrate=12M"
+set "minrate=14M"
 set "bitrate=14M"
-set "maxrate=15M"
-set "bufsize=15M"
+set "maxrate=14M"
+set "bufsize=14M"
 set "audioRate=320k"
 set "sampleRate=44100"
 set "frameSize=1920x1080"
@@ -44,8 +44,8 @@ for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
         if !fileSize1! equ !fileSize2! (
             echo File "%%i" is ready for processing.            
             
-            ffmpeg -i "%%i" -c:v %vCodec% -b:v %bitrate% -pass 1 -an -f mp4 - && \
-            ffmpeg -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]" -c:v %vCodec% -b:v %bitrate%  -pass 2 -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 "!destFile!"	
+            ffmpeg -i "%%i" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate% -pass 1 -an -f mp4 - && \
+            ffmpeg -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate%  -pass 2 -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 "!destFile!"	
 
             echo Finished processing: "%%i"
         ) else (
