@@ -22,7 +22,7 @@ set "logopath=1plus1_wm_2.png"
 :: Check every file in the source folder recursively
 for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
     :: Construct the output file path
-    set "destFile=%%~dpni_nvidia_logo_2pass_encoded.mp4"
+    set "destFile=%%~dpni_nvidia_logo_1pass_encoded.mp4"
     :: Extract the base name of the video file for a unique log file name
     set "baseName=%%~ni"
     
