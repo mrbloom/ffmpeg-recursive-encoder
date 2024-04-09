@@ -5,7 +5,7 @@ setlocal enabledelayedexpansion
 set "sourceFolder=Z:\fast_channels\OTERRA\ENCODE"
 
 :: Codec configurations and settings
-set "vCodec=h264_nvenc"
+set "vCodec=h264_qsv"
 set "aCodec=aac"
 set "minrate=12M"
 set "bitrate=14M"
@@ -22,7 +22,7 @@ set "logopath=1plus1_wm_2.png"
 :: Check every file in the source folder recursively
 for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
     :: Construct the output file path
-    set "destFile=%%~dpni_nvidia_logo_1pass_encoded.mp4"
+    set "destFile=%%~dpni_qsync_logo_1pass_encoded.mp4"
     :: Extract the base name of the video file for a unique log file name
     set "baseName=%%~ni"
     
@@ -46,7 +46,7 @@ for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
         if !fileSize1! equ !fileSize2! (
             echo File "%%i" is ready for processing.            
             
-            ffmpeg -hwaccel cuda -hwaccel_output_format cuda  -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]"   -c:v %vCodec%  -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate%  -pass 2  -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 "!destFile!"	
+            ffmpeg -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate%  -pass 2 -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 "!destFile!"	
 
             echo Finished processing: "%%i"
         ) else (
@@ -61,3 +61,6 @@ for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
 timeout /t 60
 
 goto loop
+
+
+:: Why it throws warning?
