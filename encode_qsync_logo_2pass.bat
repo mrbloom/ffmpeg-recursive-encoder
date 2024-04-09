@@ -22,7 +22,9 @@ set "logopath=1plus1_wm_2.png"
 :: Check every file in the source folder recursively
 for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
     :: Construct the output file path
-    set "destFile=%%~dpni_qsync_logo_encoded.mp4"
+    set "destFile=%%~dpni_qsync_logo_2pass_encoded.mp4"
+    :: Extract the base name of the video file for a unique log file name
+    set "baseName=%%~ni"
     
     
     :: Check if the .mp4 file already exists (meaning another instance is processing it)
@@ -44,8 +46,8 @@ for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
         if !fileSize1! equ !fileSize2! (
             echo File "%%i" is ready for processing.            
             
-            ffmpeg -i "%%i" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate% -pass 1 -an -f mp4 - && \
-            ffmpeg -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate%  -pass 2 -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 "!destFile!"	
+            ffmpeg -i "%%i" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate% -pass 1 -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" -an -f mp4 -an -f mp4 NUL && \
+            ffmpeg -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate%  -pass 2 -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" "!destFile!"	
 
             echo Finished processing: "%%i"
         ) else (
