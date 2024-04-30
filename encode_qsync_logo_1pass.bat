@@ -46,7 +46,7 @@ for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
         if !fileSize1! equ !fileSize2! (
             echo File "%%i" is ready for processing.            
             
-            ffmpeg -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]" -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate%  -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 "!destFile!"	
+            ffmpeg -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]"  -write_tmcd false -c:v %vCodec% -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate%  -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 "!destFile!"	
 
             echo Finished processing: "%%i"
         ) else (

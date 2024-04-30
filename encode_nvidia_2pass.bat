@@ -7,9 +7,9 @@ set "sourceFolder=Z:\fast_channels\OTERRA\ENCODE"
 :: Codec configurations and settings
 set "vCodec=h264_nvenc"
 set "aCodec=aac"
-set "minrate=12M"
+set "minrate=14M"
 set "bitrate=14M"
-set "maxrate=15M"
+set "maxrate=14M"
 set "bufsize=14M"
 set "audioRate=320k"
 set "sampleRate=44100"
@@ -22,7 +22,7 @@ set "logopath=1plus1_wm_2.png"
 :: Check every file in the source folder recursively
 for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
     :: Construct the output file path
-    set "destFile=%%~dpni_nvidia_logo_1pass_encoded.mp4"
+    set "destFile=%%~dpni_nvidia_2pass_encoded.mp4"
     :: Extract the base name of the video file for a unique log file name
     set "baseName=%%~ni"
     
@@ -46,9 +46,9 @@ for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
         if !fileSize1! equ !fileSize2! (
             echo File "%%i" is ready for processing.            
             
-            ffmpeg -hwaccel cuda -hwaccel_output_format cuda  -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]"  -write_tmcd false  -c:v %vCodec%  -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate%   -map "[a]"  -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 -n -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" "!destFile!"	
-	    
-		            		
+	    ffmpeg -hwaccel cuda -hwaccel_output_format cuda  -i "%%i" -c:v %vCodec%  -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate% -pass 1 -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" -an -f mp4 NUL && \
+            ffmpeg -hwaccel cuda -hwaccel_output_format cuda  -i "%%i" -filter_complex "[0:a:0][0:a:1]amerge=inputs=2[a]" -write_tmcd false -map 0:v  -c:v %vCodec%  -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate%  -pass 2  -map "[a]" -map -0:d -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" "!destFile!"	
+
             echo Finished processing: "%%i"
         ) else (
             echo File "%%i" is still uploading.

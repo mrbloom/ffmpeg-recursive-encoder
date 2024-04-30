@@ -47,7 +47,7 @@ for /R "%sourceFolder%" %%i in (*.mkv, *.avi, *.mxf) do (
             echo File "%%i" is ready for processing.            
             
 			ffmpeg -hwaccel cuda -hwaccel_output_format cuda  -i "%%i" -c:v %vCodec%  -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize%  -b:v %bitrate% -pass 1 -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" -an -f mp4 NUL && \
-            ffmpeg -hwaccel cuda -hwaccel_output_format cuda  -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]"   -c:v %vCodec%  -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate%  -pass 2  -map "[a]" -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" "!destFile!"	
+            ffmpeg -hwaccel cuda -hwaccel_output_format cuda  -i "%%i" -i %logopath%  -filter_complex "[0:v][1:v]overlay=0:0[v];[0:a:0][0:a:1]amerge=inputs=2[a]" -map "[v]"   -write_tmcd false -c:v %vCodec%  -minrate %minrate% -maxrate %maxrate% -bufsize %bufsize% -b:v %bitrate%  -pass 2  -map "[a]" -map -0:d -c:a %aCodec% -b:a %audioRate% -ar %sampleRate% -ac 2 -passlogfile "!sourceFolder!\!baseName!_ffmpeglog" "!destFile!"	
 
             echo Finished processing: "%%i"
         ) else (
